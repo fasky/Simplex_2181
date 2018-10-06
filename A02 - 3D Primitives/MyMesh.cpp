@@ -275,9 +275,26 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//Circle and top point, basically
+	//radius for bottom radius - circle. Height for tip. subs for circle creation.
+	//get angle of seperation
+	double seperationAngle = 360.00 / a_nSubdivisions;
+	seperationAngle = (seperationAngle)*(PI / 180); //convert to radians
+
+													//for calculations
+	vector3 originPoint = vector3(0, 0, 0);
+	vector3 lastPoint = vector3(0, a_fRadius, 0);
+
+	//create triangles
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//get endpoint - Counter-clockwise
+		vector3 endPoint = vector3(((lastPoint.x)*cos(seperationAngle)) + ((-lastPoint.y)*sin(seperationAngle)), ((lastPoint.x)*sin(seperationAngle)) + ((lastPoint.y)*cos(seperationAngle)), 0);
+		//add triangle
+		AddTri(originPoint, lastPoint, endPoint);
+		AddTri(endPoint, lastPoint, originPoint + vector3(0.0f,0.0f, -a_fHeight));
+		//move along circle
+		lastPoint = endPoint;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -299,9 +316,28 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//Two circles connected
+	//Height for distance between circles
+	//get angle of seperation
+	double seperationAngle = 360.00 / a_nSubdivisions;
+	seperationAngle = (seperationAngle)*(PI / 180); //convert to radians
+
+													//for calculations
+	vector3 originPoint = vector3(0, 0, 0);
+	vector3 lastPoint = vector3(0, a_fRadius, 0);
+
+	//create triangles
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//get endpoint - Counter-clockwise
+		vector3 endPoint = vector3(((lastPoint.x)*cos(seperationAngle)) + ((-lastPoint.y)*sin(seperationAngle)), ((lastPoint.x)*sin(seperationAngle)) + ((lastPoint.y)*cos(seperationAngle)), 0);
+		//add triangles for both circles
+		AddTri(originPoint, lastPoint, endPoint);
+		AddTri(originPoint + vector3(0.0f, 0.0f, -a_fHeight),endPoint + vector3(0.0f, 0.0f, -a_fHeight),lastPoint + vector3(0.0f, 0.0f, -a_fHeight));
+		//then quads for the sides
+		AddQuad(endPoint, lastPoint, endPoint + vector3(0.0f, 0.0f, -a_fHeight), lastPoint + vector3(0.0f, 0.0f, -a_fHeight));
+		//move along circle
+		lastPoint = endPoint;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -329,9 +365,32 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	//Two circles connected but with a hole in the middle
+	//Height for distance between circles
+	//get angle of seperation
+	double seperationAngle = 360.00 / a_nSubdivisions;
+	seperationAngle = (seperationAngle)*(PI / 180); //convert to radians
+
+	//for calculations
+	vector3 originPoint = vector3(0, a_fInnerRadius, 0);
+	vector3 lastPoint = vector3(0, a_fOuterRadius, 0);
+
+	//create triangles/quads
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//get endpoint - Counter-clockwise
+		vector3 nextOrigin = vector3(((originPoint.x)*cos(seperationAngle)) + ((-originPoint.y)*sin(seperationAngle)), ((originPoint.x)*sin(seperationAngle)) + ((originPoint.y)*cos(seperationAngle)), 0);
+		vector3 endPoint = vector3(((lastPoint.x)*cos(seperationAngle)) + ((-lastPoint.y)*sin(seperationAngle)), ((lastPoint.x)*sin(seperationAngle)) + ((lastPoint.y)*cos(seperationAngle)), 0);
+		//add quads for both circles
+		AddQuad(nextOrigin, originPoint, endPoint, lastPoint);
+		AddQuad(originPoint + vector3(0.0f, 0.0f, -a_fHeight), nextOrigin + vector3(0.0f, 0.0f, -a_fHeight), lastPoint + vector3(0.0f, 0.0f, -a_fHeight), endPoint + vector3(0.0f, 0.0f, -a_fHeight));
+		//then quads for the sides
+		AddQuad(originPoint, nextOrigin, (originPoint + vector3(0.0f, 0.0f, -a_fHeight)), nextOrigin + vector3(0.0f, 0.0f, -a_fHeight));
+		AddQuad(endPoint, lastPoint, endPoint + vector3(0.0f, 0.0f, -a_fHeight), lastPoint + vector3(0.0f, 0.0f, -a_fHeight));
+
+		//move along circles
+		originPoint = nextOrigin;
+		lastPoint = endPoint;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -361,7 +420,12 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Release();
 	Init();
 
-	// Replace this with your code
+	//vector3 origin(0, 0, 0);
+
+	//point in middle of outer circle/tube
+	//vector3 outerOrigin = (origin + a_fOuterRadius * vector3(cos(1),sin(0),0));
+
+	//Replace this with your code
 	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
 	// -------------------------------
 
@@ -369,28 +433,96 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
 }
+
+//pretty uneven sphere
 void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Color)
 {
 	if (a_fRadius < 0.01f)
 		a_fRadius = 0.01f;
 
 	//Sets minimum and maximum of subdivisions
-	if (a_nSubdivisions < 1)
+	if (a_nSubdivisions < 3)
 	{
 		GenerateCube(a_fRadius * 2.0f, a_v3Color);
 		return;
 	}
-	if (a_nSubdivisions > 6)
-		a_nSubdivisions = 6;
+	if (a_nSubdivisions > 360) {
+		a_nSubdivisions = 360;
+	}
 
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	double seperationAngle = 360.00 / a_nSubdivisions;
+	seperationAngle = (seperationAngle)*(PI / 180); //convert to radians
 
-	// Adding information about color
+	vector3 originPoint = vector3(0, 0, 0);
+	vector3 lastPoint = vector3(0, a_fRadius, 0);
+
+	//create 
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//get endpoint - Counter-clockwise
+		vector3 endPoint = vector3(((lastPoint.x)*cos(seperationAngle)) + ((-lastPoint.y)*sin(seperationAngle)), ((lastPoint.x)*sin(seperationAngle)) + ((lastPoint.y)*cos(seperationAngle)), 0);
+		
+		//add triangle
+		//AddTri(endPoint, lastPoint, originPoint + vector3(0.0f, 0.0f, -a_fRadius));
+		//AddTri(vector3(lastPoint.x, lastPoint.y, -lastPoint.z), vector3(endPoint.x, endPoint.y, -endPoint.z), originPoint + vector3(0.0f, 0.0f, a_fRadius));
+
+		/*get center of triangles
+		vector3 centroidFirst = (endPoint + lastPoint + (originPoint + vector3(0.0f, 0.0f, -a_fRadius)))/3;
+		vector3 centroidSecond = (vector3(lastPoint.x, lastPoint.y, -lastPoint.z) + vector3(endPoint.x, endPoint.y, -endPoint.z) + (originPoint + vector3(0.0f, 0.0f, a_fRadius))) / 3;
+		
+		AddTri(centroidFirst, endPoint, lastPoint);
+		AddTri(centroidFirst, lastPoint, originPoint + vector3(0.0f, 0.0f, -a_fRadius));
+		AddTri(centroidSecond, vector3(lastPoint.x, lastPoint.y, -lastPoint.z), vector3(endPoint.x, endPoint.y, -endPoint.z));
+		AddTri(centroidSecond, vector3(endPoint.x, endPoint.y, -endPoint.z), originPoint + vector3(0.0f, 0.0f, a_fRadius));
+		*/
+
+		Spherize(endPoint, lastPoint, originPoint + vector3(0.0f, 0.0f, -a_fRadius), originPoint, a_fRadius);
+		Spherize(vector3(lastPoint.x, lastPoint.y, -lastPoint.z), vector3(endPoint.x, endPoint.y, -endPoint.z), originPoint + vector3(0.0f, 0.0f, a_fRadius), originPoint, a_fRadius);
+
+		//move along circle
+		lastPoint = endPoint;
+	}
+	//Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
+}
+
+//try to make shape more round - divide into triangles by getting points and normalizing then adding tris
+void MyMesh::Spherize(vector3 a, vector3 b, vector3 c, vector3 d, float radius)
+{
+	std::vector <vector3> vertices;
+	std::vector <vector3> newPoints;
+	vertices.push_back((a + b) / 2);
+	vertices.push_back((b + c) / 2);
+	vertices.push_back((c + a) / 2);
+
+	for (int j = 0; j < 3; j++) {
+		//normalize and Draw triangles
+		newPoints.push_back(Normalize(vertices[j], d, radius));
+	}
+
+	AddTri(newPoints[0], newPoints[1], newPoints[2]);
+	AddTri(newPoints[2], newPoints[1], c);
+	AddTri(newPoints[1],newPoints[0], b);
+	AddTri(newPoints[0], newPoints[2], a);
+
+}
+
+//b is origin
+vector3 MyMesh::Normalize(vector3 a, vector3 b, float radius)
+{
+	//new point - origin
+	double diffX = a.x - b.x;
+	double diffY = a.y - b.y;
+	double diffZ = a.z - b.z;
+
+	diffX = diffX * radius / (sqrt((diffX*diffX) + (diffY*diffY) + (diffZ*diffZ)));
+	diffY = diffY * radius / (sqrt((diffX*diffX) + (diffY*diffY) + (diffZ*diffZ)));
+	diffZ = diffZ * radius / (sqrt((diffX*diffX) + (diffY*diffY) + (diffZ*diffZ)));
+
+	vector3 newPoint(b.x + diffX, b.y + diffY, b.z + diffZ);
+
+	return newPoint;
 }

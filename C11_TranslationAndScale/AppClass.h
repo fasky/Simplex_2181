@@ -9,12 +9,17 @@ Date: 2017/05
 
 #include "ControllerConfiguration.h"
 #include "imgui\ImGuiObject.h"
-
+#include <vector>
 #include "MyMesh.h"
 
 class Application
 {
-	MyMesh* m_pMesh = nullptr;
+	//hold cubes
+	std::vector<MyMesh*> cubes;
+
+	MyMesh* m_pMesh1 = nullptr;
+	//MyMesh* m_pMesh2 = nullptr;
+
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 
 private:

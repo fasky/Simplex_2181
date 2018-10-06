@@ -11,21 +11,34 @@ void Application::InitVariables(void)
 	m_pModel->Load("Sorted\\WallEye.bto");
 	
 	m_stopsList.push_back(vector3(-4.0f, -2.0f, 5.0f));
+	maxStops++;
+
 	m_stopsList.push_back(vector3(1.0f, -2.0f, 5.0f));
+	maxStops++;
 
 	m_stopsList.push_back(vector3(-3.0f, -1.0f, 3.0f));
 	m_stopsList.push_back(vector3(2.0f, -1.0f, 3.0f));
+	maxStops++;
+	maxStops++;
 
 	m_stopsList.push_back(vector3(-2.0f, 0.0f, 0.0f));
 	m_stopsList.push_back(vector3(3.0f, 0.0f, 0.0f));
+	maxStops++;
+	maxStops++;
 
 	m_stopsList.push_back(vector3(-1.0f, 1.0f, -3.0f));
 	m_stopsList.push_back(vector3(4.0f, 1.0f, -3.0f));
+	maxStops++;
+	maxStops++;
 
 	m_stopsList.push_back(vector3(0.0f, 2.0f, -5.0f));
 	m_stopsList.push_back(vector3(5.0f, 2.0f, -5.0f));
+	maxStops++;
+	maxStops++;
 
 	m_stopsList.push_back(vector3(1.0f, 3.0f, -5.0f));
+	maxStops++;
+
 }
 void Application::Update(void)
 {
@@ -53,18 +66,38 @@ void Application::Display(void)
 
 	//calculate the current position
 	vector3 v3CurrentPos;
-	
-
-
-
 
 	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
+	static float moveNum = 0.0f;
+
+	v3CurrentPos = glm::lerp(m_stopsList[currentStop], m_stopsList[nextStop],moveNum);
+
+	moveNum += 0.05f;
+
+	//if at destination, change stops to move to next one. If at end of points, reverse and go down the list. If back at bottom, reverse again
+	if (moveNum >= 1.0f) {
+		if (reverse == false) {
+			currentStop++;
+			nextStop++;
+		}
+		else {
+			currentStop--;
+			nextStop--;
+		}
+		if (nextStop == maxStops) {
+			currentStop = maxStops - 1;
+			nextStop = maxStops - 2;
+			reverse = true;
+		}
+		else if (currentStop == 0) {
+			nextStop = 1;
+			reverse = false;
+		}
+		moveNum = 0.0f;
+	}
 	//-------------------
-	
 
 
-	
 	matrix4 m4Model = glm::translate(v3CurrentPos);
 	m_pModel->SetModelMatrix(m4Model);
 

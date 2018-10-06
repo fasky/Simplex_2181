@@ -211,6 +211,13 @@ public:
 	OUTPUT: ---
 	*/
 	void GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Color = C_WHITE);
+
+	//a, b, c = triangle points, d = origin
+	void Spherize(vector3 a, vector3 b, vector3 c, vector3 d, float radius);
+
+	//a is point from triangle lines from spherize, b is origin (d)
+	vector3 Normalize(vector3 a, vector3 b, float radius);
+
 #pragma endregion
 };
 

@@ -11,11 +11,28 @@ void MyMesh::GenerateCircle(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		a_nSubdivisions = 3;
 	if (a_nSubdivisions > 360)
 		a_nSubdivisions = 360;
-
 	/*
 		Calculate a_nSubdivisions number of points around a center point in a radial manner
 		then call the AddTri function to generate a_nSubdivision number of faces
 	*/
+	//Kyle Fasanella
+	//get angle of seperation
+	double seperationAngle = 360.00 / a_nSubdivisions;
+	seperationAngle = (seperationAngle)*(PI / 180); //convert to radians
+
+	//for calculations
+	vector3 originPoint = vector3(0, 0, 0);
+	vector3 lastPoint = vector3(0, a_fRadius, 0);
+
+	//create triangles
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//get endpoint - Counter-clockwise
+		vector3 endPoint = vector3(((lastPoint.x)*cos(seperationAngle)) + ((-lastPoint.y)*sin(seperationAngle)), ((lastPoint.x)*sin(seperationAngle)) + ((lastPoint.y)*cos(seperationAngle)),0);
+		//add triangle
+		AddTri(originPoint, lastPoint, endPoint);
+		//move along circle
+		lastPoint = endPoint;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
