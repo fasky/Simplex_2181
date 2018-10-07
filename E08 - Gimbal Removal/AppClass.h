@@ -17,6 +17,14 @@ class Application
 	matrix4 m_m4Model = IDENTITY_M4;
 	quaternion m_qOrientation;
 	vector3 m_v3Rotation;
+
+	bool rotateX = false;
+	bool rotateY = false;
+	bool rotateZ = false;
+	bool rotateXNeg = false;
+	bool rotateYNeg = false;
+	bool rotateZNeg = false;
+
 	MyMesh* m_pMesh = nullptr;
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 
