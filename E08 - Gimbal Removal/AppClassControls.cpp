@@ -414,12 +414,16 @@ void Application::ProcessKeyboard(void)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 		m_pCameraMngr->MoveVertical(fSpeed);
 #pragma endregion
+
+	//reset bools
 	rotateX = false;
 	rotateY = false;
 	rotateZ = false;
 	rotateXNeg = false;
 	rotateYNeg = false;
 	rotateZNeg = false;
+
+	//determine if bools need to be true
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
 	{
 		if (fMultiplier) {
@@ -449,7 +453,7 @@ void Application::ProcessKeyboard(void)
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 	{
-		m_v3Rotation = vector3(0.0f);
+		reset = true;
 	}
 }
 //Joystick

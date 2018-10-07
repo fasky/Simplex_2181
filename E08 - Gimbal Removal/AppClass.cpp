@@ -35,34 +35,49 @@ void Application::Display(void)
 	quaternion qY;
 	quaternion qZ;
 
-	//use quats
-	//i just used angle axis with 1 deg change
-	if (rotateX) {
-		qX = glm::angleAxis(glm::radians(1.0f), AXIS_X);
+	//reset rotation to original
+	if (reset) {
+		m_m4Model = glm::rotate(IDENTITY_M4, glm::radians(0.0f), vector3(1.0f, 0.0f, 0.0f));
+		m_m4Model = glm::rotate(m_m4Model, glm::radians(0.0f), vector3(0.0f, 1.0f, 0.0f));
+		m_m4Model = glm::rotate(m_m4Model, glm::radians(0.0f), vector3(0.0f, 0.0f, 1.0f));
+		m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_m4Model));
+		m_qOrientation = original;
+		reset = false;
 	}
-	else if (rotateXNeg) {
-		qX = glm::angleAxis(glm::radians(-1.0f), AXIS_X);
-	}
-	if (rotateY) {
-		qY = glm::angleAxis(glm::radians(1.0f), AXIS_Y);
-	}
-	else if (rotateYNeg) {
-		qY = glm::angleAxis(glm::radians(-1.0f), AXIS_Y);
-	}
-	if (rotateZ) {
-		qZ = glm::angleAxis(glm::radians(1.0f), AXIS_Z);
-	}
-	else if (rotateZNeg) {
-		qZ = glm::angleAxis(glm::radians(-1.0f), AXIS_Z);
+	else {
+		//use quats
+		//i just used angle axis with 1 deg change
+		//I guess this gets rid of the gimbal lock? It rotates differently than using m_v3Rotation, at least. Local axis vs global?
+		//There's probably an easier way to do this
+		if (rotateX) {
+			qX = glm::angleAxis(glm::radians(1.0f), AXIS_X);
+		}
+		else if (rotateXNeg) {
+			qX = glm::angleAxis(glm::radians(-1.0f), AXIS_X);
+		}
+		if (rotateY) {
+			qY = glm::angleAxis(glm::radians(1.0f), AXIS_Y);
+		}
+		else if (rotateYNeg) {
+			qY = glm::angleAxis(glm::radians(-1.0f), AXIS_Y);
+		}
+		if (rotateZ) {
+			qZ = glm::angleAxis(glm::radians(1.0f), AXIS_Z);
+		}
+		else if (rotateZNeg) {
+			qZ = glm::angleAxis(glm::radians(-1.0f), AXIS_Z);
+		}
+
+		//glm::quat q5 = glm::quat(m_v3Rotation);
+
+		//get quat then change toMatrix4 in render a few lines down
+		m_qOrientation = m_qOrientation * qZ *qY *qX;
+		//m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_m4Model));
+		//m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(1.0f), vector3(1.0f));
+		m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_qOrientation));
 	}
 
-	//glm::quat q5 = glm::quat(m_v3Rotation);
 
-	//get quat then change toMatrix4 in render a few lines down
-	m_qOrientation = m_qOrientation * qZ *qY *qX;
-	//m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_m4Model));
-	//m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(1.0f), vector3(1.0f));
-	m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_qOrientation));
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();

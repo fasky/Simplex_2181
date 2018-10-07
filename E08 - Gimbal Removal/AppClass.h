@@ -16,8 +16,10 @@ class Application
 {
 	matrix4 m_m4Model = IDENTITY_M4;
 	quaternion m_qOrientation;
+	quaternion original;
 	vector3 m_v3Rotation;
 
+	bool reset = false;
 	bool rotateX = false;
 	bool rotateY = false;
 	bool rotateZ = false;
