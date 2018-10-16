@@ -49,26 +49,35 @@ void Application::Display(void)
 	switch (m_uProjection)
 	{
 	default:
-	case 1:
+	case 1: //default
 		m_pCamera->ResetCamera();
 		break;
-	case 2:
+	case 2: //similar to 1
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_Z * 250.0f, ZERO_V3, AXIS_Y);
+		m_pCamera->SetFOV(.04f);
 		break;
-	case 3:
+	case 3: //side view
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_X * 20.0f, ZERO_V3, -AXIS_Z);
 		break;
-	case 4:
+	case 4: //cone first
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_Z * -15.0f, ZERO_V3, AXIS_Y);
 		break;
-	case 5:
+	case 5: //4 with near plane
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_Z * -15.0f, ZERO_V3, AXIS_Y);
+		m_pCamera->SetNearFar(vector2(5,1000));
 		break;
-	case 6:
+	case 6: //4 with decreased far plane
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_Z * -15.0f, ZERO_V3, AXIS_Y);
+		m_pCamera->SetNearFar(vector2(.01f, 10.0f));
 		break;
-	case 7:
+	case 7: //Upside down scene 1
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPositionTargetAndUpward(AXIS_Z * 10.0f, ZERO_V3, -AXIS_Y);
 		break;
 	}
 

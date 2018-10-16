@@ -69,6 +69,20 @@ void Application::Display(void)
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 
+	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix();
+	matrix4 m4View = m_pCameraMngr->GetViewMatrix();
+
+	float fovy = m_fFovy;
+	//float aspect = 1080.0f/720.0f;
+	float aspect = m_pSystem->GetWindowWidth() / m_pSystem->GetWindowHeight();
+	float zNear = 0.0001f;
+	float zFar = 1000.0f;
+
+	m4Projection = glm::perspective(fovy,aspect,zNear,zFar);
+
+	m_pCameraMngr->SetProjectionMatrix(m4Projection);
+	m_pCameraMngr->SetViewMatrix(m4View);
+
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
 
