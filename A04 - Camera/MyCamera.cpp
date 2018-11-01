@@ -1,6 +1,7 @@
 #include "MyCamera.h"
 using namespace Simplex;
 
+//edits by Kyle Fasanella
 //Accessors
 void Simplex::MyCamera::SetPosition(vector3 a_v3Position) { m_v3Position = a_v3Position; }
 vector3 Simplex::MyCamera::GetPosition(void) { return m_v3Position; }
@@ -100,9 +101,16 @@ Simplex::MyCamera::~MyCamera(void)
 
 void Simplex::MyCamera::ResetCamera(void)
 {
-	m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
-	m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
+	m_v3Position = vector3(0.0f, 3.0f, 20.0f); //Where my camera is located
+	m_v3Target = vector3(0.0f, 3.0f, 19.0f); //What I'm looking at
 	m_v3Above = vector3(0.0f, 1.0f, 0.0f); //What is above the camera
+
+	m_v3Forward = vector3(0.0f, 0.0f, -1.0f); //Roll vector	
+	m_v3Upward = vector3(0.0f, 1.0f, 0.0f); //Yaw vector
+	m_v3Rightward = vector3(1.0f, 0.0f, 0.0f); //Pitch vector
+
+	//direction vector - apply to main 3 vectors for camera movement
+	m_v3Direction = vector3(0.0f, 0.0f, -1.0f);
 
 	m_bPerspective = true; //perspective view? False is Orthographic
 
@@ -132,6 +140,9 @@ void Simplex::MyCamera::SetPositionTargetAndUpward(vector3 a_v3Position, vector3
 void Simplex::MyCamera::CalculateViewMatrix(void)
 {
 	//Calculate the look at most of your assignment will be reflected in this method
+	//calculate target - applies rotations
+	m_v3Target = m_v3Position + m_v3Direction;
+	//get view matrix - calculated target that includes rotation now
 	m_m4View = glm::lookAt(m_v3Position, m_v3Target, glm::normalize(m_v3Above - m_v3Position)); //position, target, upward
 }
 
@@ -150,13 +161,51 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 	}
 }
 
+//back and forth
 void MyCamera::MoveForward(float a_fDistance)
 {
-	//The following is just an example and does not take in account the forward vector (AKA view vector)
-	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance);
-	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);
+	//simply apply direction to vectors
+	m_v3Position += m_v3Direction * a_fDistance;
+	m_v3Target += m_v3Direction * a_fDistance;
+	m_v3Above += m_v3Direction * a_fDistance;
 }
 
-void MyCamera::MoveVertical(float a_fDistance){}//Needs to be defined
-void MyCamera::MoveSideways(float a_fDistance){}//Needs to be defined
+//move up and down 
+void MyCamera::MoveVertical(float a_fDistance){
+
+	//like in solution, just goes up and down on global y
+	m_v3Position += vector3(0.0f, a_fDistance, 0.0f);
+	m_v3Target += vector3(0.0f, a_fDistance, 0.0f);
+	m_v3Above += vector3(0.0f, a_fDistance, 0.0f);
+}
+
+//move left and right of direction vector
+void MyCamera::MoveSideways(float a_fDistance){
+
+	//get right vector, then nullify y component, then apply
+	m_v3Rightward = m_v3Direction;
+	m_v3Rightward.y = 0.0f;
+	m_v3Rightward = glm::rotate(m_v3Rightward, glm::radians(-90.0f), AXIS_Y);
+	m_v3Position += m_v3Rightward * a_fDistance;
+	m_v3Target += m_v3Rightward * a_fDistance;
+	m_v3Above += m_v3Rightward * a_fDistance;
+}
+
+//change rotation around x axis
+void MyCamera::ChangePitch(float fAngle)
+{
+	//get right vector
+	m_v3Rightward = m_v3Direction;
+	m_v3Rightward.y = 0.0f;
+	m_v3Rightward = glm::rotate(m_v3Rightward, glm::radians(-90.0f), AXIS_Y);
+	//apply rotation around right vector to change direction, which is applied in calcviewmatrix
+	m_v3Direction = glm::rotate(m_v3Direction, glm::radians(fAngle), m_v3Rightward);
+}
+
+//change rotation around y axis
+void MyCamera::ChangeYaw(float fAngle)
+{
+	//rotate around y - like pitch but around global y like in solution
+	m_v3Direction = glm::rotate(m_v3Direction, glm::radians(fAngle), AXIS_Y); //m_v3Upward); //didn't notice a difference 
+	//(upwards doesnt meaningfully update i guess so its basically just axis_y)
+}
