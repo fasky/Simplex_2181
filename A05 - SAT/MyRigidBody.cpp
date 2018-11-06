@@ -86,7 +86,6 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 
 	//Calculate the 8 corners of the cube
-	vector3 v3Corner[8];
 	//Back square
 	v3Corner[0] = m_v3MinL;
 	v3Corner[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
@@ -123,6 +122,16 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 
 	//we calculate the distance between min and max vectors
 	m_v3ARBBSize = m_v3MaxG - m_v3MinG;
+}
+bool Simplex::MyRigidBody::IsZeroVector(vector3 m)
+{
+	float tolerance = .001f;
+	if (m.x < tolerance || m.x > -tolerance || m.y < tolerance || m.y > -tolerance || m.z < tolerance || m.z > -tolerance) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 //The big 3
 MyRigidBody::MyRigidBody(std::vector<vector3> a_pointList)
@@ -276,17 +285,223 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
+
+	//it doesn't work idk what im doing - commented out attempts (show i didnt not try)
+
+	//get distance between centers - cB - cA
+	vector3 distance =  glm::abs(a_pOther->GetCenterGlobal() - GetCenterGlobal());
+
+	vector3 halfA = GetHalfWidth();
+	vector3 halfB = glm::rotate(a_pOther->GetHalfWidth(), glm::radians(-55.0f), AXIS_Z);
+
+	/* Compute a tentative separating axis for ab and cd
+	Vector m = Cross(ab, cd);
+	if (!IsZeroVector(m)) {
+		// Edges ab and cd not parallel, continue with m as a potential separating axis
+		...
+	}
+	else {
+		// Edges ab and cd must be (near) parallel, and therefore lie in some plane P.
+		// Thus, as a separating axis try an axis perpendicular to ab and lying in P
+		Vector n = Cross(ab, c - a);
+		m = Cross(ab, n);
+		if (!IsZeroVector(m)) {
+			// Continue with m as a potential separating axis
+			...
+		}
+		// ab and ac are parallel too, so edges must be on a line. Ignore testing
+		// the axis for this combination of edges as it won’t be a separating axis.
+		// (Alternatively, test if edges overlap on this line, in which case the
+		// objects are overlapping.)
+		...
+	}*/
+
+	//z = point 4 - 0, y = point 2 - 0, x = point 1 - 0
+	zAxis = glm::abs(vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG);
+	yAxis = glm::abs(vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG);
+	xAxis = glm::abs(vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG);
+	a_pOther->zAxis = glm::abs(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG);
+	a_pOther->yAxis = glm::abs(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG);
+	a_pOther->xAxis = glm::abs(vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG);
+
+
+	if ((glm::abs(halfA.x) + glm::abs(halfB.x)) < distance.x) {
+		return eSATResults::SAT_AX;
+	}
+
+	if ((glm::abs(halfA.y) + glm::abs(halfB.y)) < distance.y) {
+		return eSATResults::SAT_AY;
+	}
+
+	if ((glm::abs(halfA.z) + glm::abs(halfB.z)) < distance.z) {
+		return eSATResults::SAT_AZ;
+	}
 	/*
-	Your code goes here instead of this comment;
+	if(CheckEdges(v3Corner[0], v3Corner[1], a_pOther->v3Corner[0], a_pOther->v3Corner[1],distance,halfA,halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[0], v3Corner[2], a_pOther->v3Corner[0], a_pOther->v3Corner[2], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[0], v3Corner[4], a_pOther->v3Corner[0], a_pOther->v3Corner[4], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[4], v3Corner[6], a_pOther->v3Corner[4], a_pOther->v3Corner[6], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[4], v3Corner[5], a_pOther->v3Corner[4], a_pOther->v3Corner[5], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[5], v3Corner[7], a_pOther->v3Corner[5], a_pOther->v3Corner[7], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[5], v3Corner[1], a_pOther->v3Corner[5], a_pOther->v3Corner[1], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[1], v3Corner[3], a_pOther->v3Corner[1], a_pOther->v3Corner[3], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[6], v3Corner[7], a_pOther->v3Corner[6], a_pOther->v3Corner[7], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[6], v3Corner[2], a_pOther->v3Corner[6], a_pOther->v3Corner[2], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[3], v3Corner[7], a_pOther->v3Corner[3], a_pOther->v3Corner[7], distance, halfA, halfB)) {
+		return 1;
+	}
+	if (CheckEdges(v3Corner[3], v3Corner[2], a_pOther->v3Corner[3], a_pOther->v3Corner[2], distance, halfA, halfB)) {
+		return 1;
+	}*/
 
-	For this method, if there is an axis that separates the two objects
-	then the return will be different than 0; 1 for any separating axis
-	is ok if you are not going for the extra credit, if you could not
-	find a separating axis you need to return 0, there is an enum in
-	Simplex that might help you [eSATResults] feel free to use it.
-	(eSATResults::SAT_NONE has a value of 0)
-	*/
+	/*
+	//z = point 4 - 0, y = point 2 - 0, x = point 1 - 0
+	zAxis = glm::normalize(vector3(m_v3MinG.x, m_v3MinG.y, m_v3MaxG.z) - m_v3MinG);
+	yAxis = glm::normalize(vector3(m_v3MinG.x, m_v3MaxG.y, m_v3MinG.z) - m_v3MinG);
+	xAxis = glm::normalize(vector3(m_v3MaxG.x, m_v3MinG.y, m_v3MinG.z) - m_v3MinG);
+	a_pOther->zAxis = glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MaxG.z) - a_pOther->m_v3MinG);
+	a_pOther->yAxis = glm::normalize(vector3(a_pOther->m_v3MinG.x, a_pOther->m_v3MaxG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG);
+	a_pOther->xAxis = glm::normalize(vector3(a_pOther->m_v3MaxG.x, a_pOther->m_v3MinG.y, a_pOther->m_v3MinG.z) - a_pOther->m_v3MinG);
+	
+	std::vector<vector3> axes;
 
+	axes.push_back(xAxis); //aX axes[0]
+	axes.push_back(yAxis); //aY 1
+	axes.push_back(zAxis); //aZ 2
+	axes.push_back(a_pOther->xAxis); //bX 3
+	axes.push_back(a_pOther->yAxis); //bY 4
+	axes.push_back(a_pOther->zAxis); //bZ axes[5]
+
+
+	//for Ax //if true, seperated
+	if (glm::abs(glm::dot(distance, axes[0])) > (halfA.x + glm::abs(halfB.x*glm::dot(axes[0],axes[3])) + glm::abs(halfB.y*glm::dot(axes[0], axes[4])) + glm::abs(halfB.z*glm::dot(axes[0], axes[5])))) {
+
+		return eSATResults::SAT_AX;
+	}
+
+	//for Ay //if true, seperated
+	else if (glm::abs(glm::dot(distance, axes[1])) > (halfA.y + glm::abs(halfB.x*glm::dot(axes[1], axes[3])) + glm::abs(halfB.y*glm::dot(axes[1], axes[4])) + glm::abs(halfB.z*glm::dot(axes[1], axes[5])))) {
+		return eSATResults::SAT_AY;
+	}
+	//for Az //if true, seperated
+	else if (glm::abs(glm::dot(distance, axes[2])) > (halfA.z + glm::abs(halfB.x*glm::dot(axes[2], axes[3])) + glm::abs(halfB.y*glm::dot(axes[2], axes[4])) + glm::abs(halfB.z*glm::dot(axes[2], axes[5])))) {
+		return eSATResults::SAT_AZ;
+	}
+	//for Bx //if true, seperated
+	else if (glm::abs(glm::dot(distance, axes[3])) > (halfB.x + glm::abs(halfA.x*glm::dot(axes[0], axes[3])) + glm::abs(halfA.y*glm::dot(axes[1], axes[3])) + glm::abs(halfA.z*glm::dot(axes[2], axes[3])))) {
+		return eSATResults::SAT_BX;
+	}
+	//for By //if true, seperated
+	else if (glm::abs(glm::dot(distance, axes[4])) > (halfB.y + glm::abs(halfA.x*glm::dot(axes[0], axes[4])) + glm::abs(halfA.y*glm::dot(axes[1], axes[4])) + glm::abs(halfA.z*glm::dot(axes[2], axes[4])))) {
+		return eSATResults::SAT_BY;
+	}
+	//for Bz //if true, seperated
+	else if (glm::abs(glm::dot(distance, axes[5])) > (halfB.z + glm::abs(halfA.x*glm::dot(axes[0], axes[5])) + glm::abs(halfA.y*glm::dot(axes[1], axes[5])) + glm::abs(halfA.z*glm::dot(axes[2], axes[5])))) {
+		return eSATResults::SAT_BZ;
+	}
+	//for AxBx //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[2])*glm::dot(axes[1],axes[3])) - (glm::dot(distance, axes[1])*glm::dot(axes[2], axes[3]))) > (glm::abs(halfA.y*glm::dot(axes[2], axes[3])) + glm::abs(halfA.z*glm::dot(axes[1], axes[3])) + glm::abs(halfB.y*glm::dot(axes[0], axes[5]))+ glm::abs(halfB.z*glm::dot(axes[0],axes[4])))) {
+		return eSATResults::SAT_AXxBX;
+	}
+	//for AxBy //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[2])*glm::dot(axes[1], axes[4])) - (glm::dot(distance, axes[1])*glm::dot(axes[2], axes[4]))) > (glm::abs(halfA.y*glm::dot(axes[2], axes[4])) + glm::abs(halfA.z*glm::dot(axes[1], axes[4])) + glm::abs(halfB.x*glm::dot(axes[0], axes[5])) + glm::abs(halfB.z*glm::dot(axes[0], axes[3])))) {
+		return eSATResults::SAT_AXxBY;
+	}
+	//for AxBz //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[2])*glm::dot(axes[1], axes[5])) - (glm::dot(distance, axes[1])*glm::dot(axes[2], axes[5]))) > (glm::abs(halfA.y*glm::dot(axes[2], axes[5])) + glm::abs(halfA.z*glm::dot(axes[1], axes[5])) + glm::abs(halfB.x*glm::dot(axes[0], axes[4])) + glm::abs(halfB.y*glm::dot(axes[0], axes[3])))) {
+		return eSATResults::SAT_AXxBZ;
+	}
+	//for AyBx //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[0])*glm::dot(axes[2], axes[3])) - (glm::dot(distance, axes[2])*glm::dot(axes[0], axes[3]))) > (glm::abs(halfA.x*glm::dot(axes[2], axes[3])) + glm::abs(halfA.z*glm::dot(axes[0], axes[3])) + glm::abs(halfB.y*glm::dot(axes[1], axes[5])) + glm::abs(halfB.z*glm::dot(axes[1], axes[4])))) {
+		return eSATResults::SAT_AYxBX;
+	}
+	//for AyBy //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[0])*glm::dot(axes[2], axes[4])) - (glm::dot(distance, axes[2])*glm::dot(axes[0], axes[4]))) > (glm::abs(halfA.x*glm::dot(axes[2], axes[4])) + glm::abs(halfA.z*glm::dot(axes[0], axes[4])) + glm::abs(halfB.x*glm::dot(axes[1], axes[5])) + glm::abs(halfB.z*glm::dot(axes[1], axes[3])))) {
+		return eSATResults::SAT_AYxBY;
+	}
+	//for AyBz //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[0])*glm::dot(axes[2], axes[5])) - (glm::dot(distance, axes[2])*glm::dot(axes[0], axes[5]))) > (glm::abs(halfA.x*glm::dot(axes[2], axes[5])) + glm::abs(halfA.z*glm::dot(axes[0], axes[5])) + glm::abs(halfB.x*glm::dot(axes[1], axes[4])) + glm::abs(halfB.y*glm::dot(axes[1], axes[3])))) {
+		return eSATResults::SAT_AYxBZ;
+	}
+	//for AzBx //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[1])*glm::dot(axes[0], axes[3])) - (glm::dot(distance, axes[0])*glm::dot(axes[1], axes[3]))) > (glm::abs(halfA.x*glm::dot(axes[1], axes[3])) + glm::abs(halfA.y*glm::dot(axes[0], axes[3])) + glm::abs(halfB.y*glm::dot(axes[2], axes[5])) + glm::abs(halfB.z*glm::dot(axes[2], axes[4])))) {
+		return eSATResults::SAT_AZxBX;
+	}
+	//for AzBy //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[1])*glm::dot(axes[0], axes[4])) - (glm::dot(distance, axes[0])*glm::dot(axes[1], axes[4]))) > (glm::abs(halfA.x*glm::dot(axes[1], axes[4])) + glm::abs(halfA.y*glm::dot(axes[0], axes[4])) + glm::abs(halfB.x*glm::dot(axes[2], axes[5])) + glm::abs(halfB.z*glm::dot(axes[2], axes[3])))) {
+		return eSATResults::SAT_AZxBY;
+	}
+	//for AzBz //if true, seperated
+	else if (glm::abs((glm::dot(distance, axes[1])*glm::dot(axes[0], axes[5])) - (glm::dot(distance, axes[0])*glm::dot(axes[1], axes[5]))) > (glm::abs(halfA.x*glm::dot(axes[1], axes[5])) + glm::abs(halfA.y*glm::dot(axes[0], axes[5])) + glm::abs(halfB.x*glm::dot(axes[2], axes[4])) + glm::abs(halfB.y*glm::dot(axes[2], axes[3])))) {
+		return eSATResults::SAT_AZxBZ;
+	}*/
+	
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
+}
+
+bool Simplex::MyRigidBody::CheckEdges(vector3 a, vector3 b, vector3 c, vector3 d, vector3 distance, vector3 hA, vector3 hB)
+{
+	//calculate edge vectors
+	vector3 ab = b - a;
+	vector3 cd = d - c;
+
+	//get axis
+	vector3 m = glm::cross(ab, cd);
+	if (!IsZeroVector(m)) {
+		// Edges ab and cd not parallel, continue with m as a potential separating axis
+		hA = glm::proj(hA, m);
+		hB = glm::proj(hB, m);
+		distance = glm::proj(distance, m);
+		if (glm::length(distance) > glm::length(ab) + glm::length(cd)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		// Edges ab and cd must be (near) parallel, and therefore lie in some plane P.
+		// Thus, as a separating axis try an axis perpendicular to ab and lying in P
+		vector3 n = glm::cross(ab, c - a);
+		m = glm::cross(ab, n);
+		if (!IsZeroVector(m)) {
+			// Continue with m as a potential separating axis
+			hA = glm::proj(hA, m);
+			hB = glm::proj(hB, m);
+			distance = glm::proj(distance, m);
+			if (glm::length(distance) > glm::length(ab) + glm::length(cd)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		// ab and ac are parallel too, so edges must be on a line. Ignore testing
+		// the axis for this combination of edges as it won’t be a separating axis.
+		// (Alternatively, test if edges overlap on this line, in which case the
+		// objects are overlapping.)
+		return false;
+	}
+	return false;
 }

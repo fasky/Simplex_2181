@@ -28,6 +28,13 @@ class MyRigidBody
 	vector3 m_v3MinL = ZERO_V3; //minimum coordinate in local space (for OBB)
 	vector3 m_v3MaxL = ZERO_V3; //maximum coordinate in local space (for OBB)
 
+	//Axes basic
+	vector3 xAxis = vector3(1.0f, 0.0f, 0.0f);
+	vector3 yAxis = vector3(0.0f, 1.0f, 0.0f);
+	vector3 zAxis = vector3(0.0f, 0.0f, 1.0f);
+
+	vector3 v3Corner[8];
+
 	vector3 m_v3MinG = ZERO_V3; //minimum coordinate in global space (for ARBB)
 	vector3 m_v3MaxG = ZERO_V3; //maximum coordinate in global space (for ARBB)
 
@@ -225,6 +232,8 @@ public:
 	Output: ---
 	*/
 	void SetModelMatrix(matrix4 a_m4ModelMatrix);
+	//Is zero vector - check if vector is basically zero
+	bool IsZeroVector(vector3 m);
 #pragma endregion
 	
 private:
@@ -247,6 +256,8 @@ private:
 	OUTPUT: 0 for colliding, other = first axis that succeeds test
 	*/
 	uint SAT(MyRigidBody* const a_pOther);
+	//use with SAT to check axes
+	bool CheckEdges(vector3 a, vector3 b, vector3 c, vector3 d, vector3 distance, vector3 hA, vector3 hB);
 };//class
 
 } //namespace Simplex
