@@ -205,6 +205,7 @@ public:
 	OUTPUT: ---
 	*/
 	void ClearDimensionSet(String a_sUniqueID);
+	void ClearDimensionSetAll(void);
 	/*
 	USAGE: Will ask if the Entity is located in a particular dimension
 	ARGUMENTS:

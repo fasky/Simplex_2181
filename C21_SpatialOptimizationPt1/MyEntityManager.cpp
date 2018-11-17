@@ -346,6 +346,18 @@ void Simplex::MyEntityManager::ClearDimensionSet(uint a_uIndex)
 
 	return m_EntityList[a_uIndex]->ClearDimensionSet();
 }
+void Simplex::MyEntityManager::ClearDimensionSetAll(void)
+{
+	//if the list is empty return
+	if (m_EntityList.size() == 0)
+		return;
+
+	//otherwise remove all dimensions
+	for(uint i = 0; i < m_EntityList.size(); i++)
+	{
+		m_EntityList[i]->ClearDimensionSet();
+	}
+}
 void Simplex::MyEntityManager::ClearDimensionSet(String a_sUniqueID)
 {
 	//Get the entity

@@ -1,7 +1,21 @@
 #include "AppClass.h"
 using namespace Simplex;
+
+//#define _CRTDBG_MAP_ALLOC
+//#include <cstdlib>
+//#include <crtdbg.h>
+//
+//#ifdef _DEBUG
+//#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+//// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+//// allocations to be of _CLIENT_BLOCK type
+//#else
+//#define DBG_NEW new
+//#endif
+
 void Application::InitVariables(void)
 {
+
 	//Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
 
@@ -12,46 +26,34 @@ void Application::InitVariables(void)
 		AXIS_Y);					//Up
 
 	m_pLightMngr->SetPosition(vector3(0.0f, 3.0f, 13.0f), 1); //set the position of first light (0 is reserved for ambient light)
-	
+
+#ifdef DEBUG
+	uint uInstances = 500;
+	//uint uInstances = 900;
+#else
+	uint uInstances = 1849;
+#endif
+
 	//Entity Manager
 	m_pEntityMngr = MyEntityManager::GetInstance();
-
-	uint uInstances = 500;
 	int nSquare = static_cast<int>(std::sqrt(uInstances));
-	uInstances = nSquare * nSquare;
-	uint uIndex = 0;
+	//uInstances = nSquare * nSquare;
+	//uint uIndex = -1;
 	for (int i = 0; i < nSquare; i++)
 	{
 		for (int j = 0; j < nSquare; j++)
 		{
+			//uIndex++;
 			m_pEntityMngr->AddEntity("Minecraft\\Cube.obj");
 			vector3 v3Position = vector3(glm::sphericalRand(34.0f));
 			matrix4 m4Position = glm::translate(v3Position);
-			m_pEntityMngr->SetModelMatrix(m4Position);
-			//m_pEntityMngr->AddDimension(-1, uIndex);
-			//++uIndex;
-
-			//if (v3Position.x < 0.0f)
-			//{
-			//	if (v3Position.x < -17.0f)
-			//		m_pEntityMngr->AddDimension(-1, 1);
-			//	else
-			//		m_pEntityMngr->AddDimension(-1, 2);
-			//}
-			//else if (v3Position.x > 0.0f)
-			//{
-			//	if (v3Position.x > 17.0f)
-			//		m_pEntityMngr->AddDimension(-1, 3);
-			//	else
-			//		m_pEntityMngr->AddDimension(-1, 4);
-			//}
-			
+			m_pEntityMngr->SetModelMatrix(m4Position);	
 		}
 	}
+	m_uOctantLevels = 1;
+	//m_pRoot = new MyOctant(m_uOctantLevels, 5);
 	m_pEntityMngr->Update();
-	m_pRoot = new MyOctant();
-	//steve
-	//m_pEntityMngr->AddEntity("Minecraft\\Steve.obj", "Steve");
+
 }
 void Application::Update(void)
 {
@@ -63,15 +65,23 @@ void Application::Update(void)
 
 	//Is the first person camera active?
 	CameraRotation();
-	
+
+	//Reconstructing the Octree each half a second
+	//if (m_bUsingPhysics)
+	//{
+	//	static uint nClock = m_pSystem->GenClock();
+	//	static bool bStarted = false;
+	//	if (m_pSystem->IsTimerDone(nClock) || !bStarted)
+	//	{
+	//		bStarted = true;
+	//		m_pSystem->StartTimerOnClock(0.5, nClock);
+	//		SafeDelete(m_pRoot);
+	//		m_pRoot = new MyOctant(m_uOctantLevels, 5);
+	//	}
+	//}
+
 	//Update Entity Manager
 	m_pEntityMngr->Update();
-
-	/*m_pMeshMngr->AddGridToRenderList(glm::rotate(IDENTITY_M4, 1.5708f, AXIS_Y));
-	m_pMeshMngr->AddGridToRenderList(glm::translate(vector3(-17.0f, 0.0f, 0.0f)) * glm::rotate(IDENTITY_M4, 1.5708f, AXIS_Y));
-	m_pMeshMngr->AddGridToRenderList(glm::translate(vector3(17.0f, 0.0f, 0.0f)) * glm::rotate(IDENTITY_M4, 1.5708f, AXIS_Y));*/
-	
-	m_pRoot->Display();
 
 	//Add objects to render list
 	m_pEntityMngr->AddEntityToRenderList(-1, true);
@@ -81,6 +91,12 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 	
+	//display octree
+	//if (m_uOctantID == -1)
+	//	m_pRoot->Display();
+	//else
+	//	m_pRoot->Display(m_uOctantID);
+
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 	

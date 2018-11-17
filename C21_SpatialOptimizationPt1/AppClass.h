@@ -20,7 +20,10 @@ class Application
 {
 	MyEntityManager* m_pEntityMngr = nullptr; //Entity Manager
 	MyOctant* m_pRoot = nullptr;
-		
+	uint m_uOctantID = -1;
+	uint m_uOctantLevels = 0;
+	bool m_bUsingPhysics = false;
+
 private:
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //programmer
 
