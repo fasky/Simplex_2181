@@ -51,6 +51,7 @@ void Application::DrawGUI(void)
 			ImGui::Separator();
 			ImGui::Text(" PageUp: Increment Octant display\n");
 			ImGui::Text(" PageDw: Decrement Octant display\n");
+			ImGui::Text(" BackSpace: Enable/Disable Visual Representation\n");
 			ImGui::Separator();
 			ImGui::Text("	  -: Increment Octree subdivision\n");
 			ImGui::Text("	  +: Decrement Octree subdivision\n");

@@ -21,24 +21,24 @@ class MyOctant
 	uint m_iID = 0; //Current id for octant
 	uint m_uLevel = 0; //Will store the current level of the octant
 	uint m_uChildren = 0;// Number of children on the octant (either 0 or 8)
-	
+
 	float m_fSize = 0.0f; //Size of the octant
 
 	MeshManager* m_pMeshMngr = nullptr;
 	MyEntityManager* m_pEntityManager = nullptr;
-	MyRigidBody* m_pRigidBody = nullptr;
+	MyRigidBody* m_pRigidBody = nullptr; 
 
 	vector3 m_v3Center = vector3(0.0f); //Will store the center point of the octant
 	vector3 m_v3Min = vector3(0.0f); //Will store the minimum vector of the octant
 	vector3 m_v3Max = vector3(0.0f); //Will store the maximum vector of the octant
-	
-	MyOctant* m_pParent = nullptr;
-	MyOctant* m_pChild[8];
+
+	MyOctant* m_pParent = nullptr; 
+	MyOctant* m_pChild[8]; 
 
 	std::vector<uint> m_EntityList; //List of Entities under this octant (Index in Entity Manager)
 
-	MyOctant* m_pRoot = nullptr;//Root octant
-	std::vector<MyOctant*> m_lChild; //list of nodes that contain objects (this will be applied to root only)
+	MyOctant* m_pRoot = nullptr; //Root octant
+	std::vector<MyOctant*> m_lChild; //list of nodes that contain objects
 
 public:
 	/*
@@ -219,7 +219,7 @@ private:
 	ARGUMENTS: ---
 	OUTPUT: ---
 	*/
-	void ConstructList(void);
+	//void ConstructList(void);
 };//class
 
 } //namespace Simplex

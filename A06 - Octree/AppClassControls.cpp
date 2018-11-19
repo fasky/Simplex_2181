@@ -111,29 +111,26 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		bFPSControl = !bFPSControl;
 		m_pCameraMngr->SetFPS(bFPSControl);
 		break;
+		
+	//Go through display options of octants/show individual octants
 	case sf::Keyboard::PageUp:
 		++m_uOctantID;
-		/*
 		if (m_uOctantID >= m_pRoot->GetOctantCount())
 			m_uOctantID = - 1;
-		*/
 		break;
 	case sf::Keyboard::PageDown:
 		--m_uOctantID;
-		/*
 		if (m_uOctantID >= m_pRoot->GetOctantCount())
 			m_uOctantID = - 1;
-		*/
 		break;
+	//Increase/Decrease subdivision level
 	case sf::Keyboard::Add:
 		if (m_uOctantLevels < 4)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			++m_uOctantLevels;
-			/*
 			SafeDelete(m_pRoot);
-			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+			m_pRoot = new MyOctant(m_uOctantLevels, m_uOctantIdealE);
 		}
 		break;
 	case sf::Keyboard::Subtract:
@@ -141,11 +138,13 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			--m_uOctantLevels;
-			/*
 			SafeDelete(m_pRoot);
-			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+			m_pRoot = new MyOctant(m_uOctantLevels, m_uOctantIdealE);
 		}
+		break;
+	//turn on/off octree display
+	case sf::Keyboard::BackSpace:
+		displayTree = !displayTree;
 		break;
 	case sf::Keyboard::LShift:
 	case sf::Keyboard::RShift:

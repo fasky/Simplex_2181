@@ -15,10 +15,6 @@ using namespace Simplex;
 
 void Application::InitVariables(void)
 {
-
-	//Alberto needed this at this position for software recording.
-	//m_pWindow->setPosition(sf::Vector2i(710, 0));
-
 	//Set the position and target of the camera
 	m_pCameraMngr->SetPositionTargetAndUpward(
 		vector3(0.0f, 0.0f, 100.0f), //Position
@@ -28,22 +24,23 @@ void Application::InitVariables(void)
 	m_pLightMngr->SetPosition(vector3(0.0f, 3.0f, 13.0f), 1); //set the position of first light (0 is reserved for ambient light)
 
 #ifdef DEBUG
-	uint uInstances = 500;
-	//uint uInstances = 900;
+	//uint uInstances = 500;
+	uint uInstances = 900;
 #else
 	uint uInstances = 1849;
 #endif
 
 	//Entity Manager
 	m_pEntityMngr = MyEntityManager::GetInstance();
+
 	int nSquare = static_cast<int>(std::sqrt(uInstances));
-	//uInstances = nSquare * nSquare;
-	//uint uIndex = -1;
+	m_uObjects = nSquare * nSquare;
+	uint uIndex = -1;
 	for (int i = 0; i < nSquare; i++)
 	{
 		for (int j = 0; j < nSquare; j++)
 		{
-			//uIndex++;
+			uIndex++;
 			m_pEntityMngr->AddEntity("Minecraft\\Cube.obj");
 			vector3 v3Position = vector3(glm::sphericalRand(34.0f));
 			matrix4 m4Position = glm::translate(v3Position);
@@ -65,20 +62,6 @@ void Application::Update(void)
 
 	//Is the first person camera active?
 	CameraRotation();
-
-	//Reconstructing the Octree each half a second
-	//if (m_bUsingPhysics)
-	//{
-	//	static uint nClock = m_pSystem->GenClock();
-	//	static bool bStarted = false;
-	//	if (m_pSystem->IsTimerDone(nClock) || !bStarted)
-	//	{
-	//		bStarted = true;
-	//		m_pSystem->StartTimerOnClock(0.5, nClock);
-	//		SafeDelete(m_pRoot);
-	//		m_pRoot = new MyOctant(m_uOctantLevels, 5);
-	//	}
-	//}
 
 	//Update Entity Manager
 	m_pEntityMngr->Update();
